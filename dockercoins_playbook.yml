@@ -1,0 +1,10 @@
+- hosts: master
+  gather_facts: false
+  tasks:
+  - name: appliquer le manifest yaml avec kubeclt
+    command: kubectl apply -f dockercoins_k8s.yml
+    register: result_deploy_dockercois
+  - name: Résultat de deploiement
+    debug:
+      msg: "{{ result_deploy_dockercois.stdout_lines }}"
+
