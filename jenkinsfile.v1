@@ -36,8 +36,8 @@ stages {
     stage('Test Docker Image') {
         steps{
             sh "docker run -d --rm --name worker $workerImg:$BUILD_NUMBER"
-            sh "docker run -d --rm --name hasher -p 8002:82 $hasherImg:$BUILD_NUMBER"
-            sh "docker run -d --rm --name rng -p 8001:81 $rngImg:$BUILD_NUMBER"
+            sh "docker run -d --rm --name hasher -p 8002:80 $hasherImg:$BUILD_NUMBER"
+            sh "docker run -d --rm --name rng -p 8001:80 $rngImg:$BUILD_NUMBER"
             sh 'sleep 30'
             sh 'docker stop worker hasher rng'
         }

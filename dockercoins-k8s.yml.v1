@@ -1,29 +1,95 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: worker
   labels:
     app: dockercoins
-    tier: backend
+    tier: worker
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: dockercoins
-      tier: backend
+      tier: worker
   template:
     metadata:
       labels:
         app: dockercoins
-        tier: backend
+        tier: worker
     spec:
       containers:
       - name: worker
         image: brahimhamdi/worker:latest
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rng
+  labels:
+    app: dockercoins
+    tier: rng
+spec:
+#  replicas: 3
+  selector:
+    matchLabels:
+      app: dockercoins
+      tier: rng
+  template:
+    metadata:
+      labels:
+        app: dockercoins
+        tier: rng
+    spec:
+      containers:
       - name: rng
         image: brahimhamdi/rng:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rng-srv
+spec:
+  selector:
+    app: dockercoins
+    tier: rng
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hasher
+  labels:
+    app: dockercoins
+    tier: hasher
+spec:
+#  replicas: 3
+  selector:
+    matchLabels:
+      app: dockercoins
+      tier: hasher
+  template:
+    metadata:
+      labels:
+        app: dockercoins
+        tier: hasher
+    spec:
+      containers:
       - name: hasher
         image: brahimhamdi/hasher:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hasher-srv
+spec:
+  selector:
+    app: dockercoins
+    tier: hasher
+  ports:
+    - port: 80
+      targetPort: 80
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,6 +99,7 @@ metadata:
     app: dockercoins
     tier: redis
 spec:
+#  replicas: 3
   selector:
     matchLabels:
       app: dockercoins
@@ -67,6 +134,7 @@ metadata:
     app: dockercoins
     tier: webui
 spec:
+#  replicas: 3
   selector:
     matchLabels:
       app: dockercoins
