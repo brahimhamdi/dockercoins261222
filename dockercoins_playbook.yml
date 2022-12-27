@@ -2,7 +2,7 @@
   gather_facts: false
   tasks:
   - name: appliquer le manifest yaml avec kubeclt
-    command: kubectl apply -f /tmp/dockercoins_k8s.yml
+    command: kubectl apply -f dockercoins-k8s.yml
     register: result_deploy_dockercois
   - name: Résultat de deploiement
     debug:
