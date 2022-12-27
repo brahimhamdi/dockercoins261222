@@ -1,0 +1,67 @@
+pipeline {
+    environment {
+        workerImg = "brahimhamdi/worker"
+        hasherImg = "brahimhamdi/hasher"
+        rngImg = "brahimhamdi/rng"
+        registryCredential = 'dockerhub' //à configurer : ajouter les paramètres de connexion à votre compte DockerHub
+        imgworker = ''
+        imghasherer = ''
+        imgrng = ''
+        
+    }
+
+agent any
+
+stages {
+    stage('Cloning Git') {
+        steps {
+            git 'https://github.com/brahimhamdi/dockercoins261222.git'
+        }
+    }
+    
+    stage('Build Docker Image') {
+        steps{
+            script {
+                imgworker = docker.build(workerImg + ":$BUILD_NUMBER","worker")
+                imgworker = docker.build(workerImg + ":latest","worker")
+                imghasher = docker.build(hasherImg + ":$BUILD_NUMBER","hasher")
+                imghasher = docker.build(hasherImg + ":latest","hasher")
+                imgrng = docker.build(rngImg + ":$BUILD_NUMBER","rng")
+                imgrng = docker.build(rngImg + ":latest","rng")
+                
+            }
+        }
+    }
+    
+    stage('Test Docker Image') {
+        steps{
+            sh "docker run -d --rm --name worker $workerImg:$BUILD_NUMBER"
+            sh "docker run -d --rm --name hasher -p 8002:80 $hasherImg:$BUILD_NUMBER"
+            sh "docker run -d --rm --name rng -p 8001:80 $rngImg:$BUILD_NUMBER"
+            sh 'sleep 30'
+            sh 'docker stop worker hasher rng'
+        }
+    }
+    
+    stage('Image push') {
+        steps{
+            script {
+                //install gnupg2 et pass avant (sudo apt install gnupg2 pass)
+                docker.withRegistry( '', registryCredential ) {
+                    imgworker.push()
+                    imghasher.push()
+                    imgrng.push()
+                }
+            }
+        }
+    }
+    
+    stage('Deploy to k8s') {
+        steps{
+            // sh 'docker rmi brahimhamdi/worker:$BUILD_NUMBER'
+            sh 'ansible-playbook dockercoins_playbook.yml'
+        }
+    }
+}
+}
+    
